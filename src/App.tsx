@@ -41,20 +41,21 @@ const FEEDBACK_MESSAGES = {
 export default function App() {
   const [gameState, setGameState] = useState<'landing' | 'quiz' | 'result'>('landing');
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.MORTAL);
+  const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
-  const filteredQuestions = useMemo(() => {
-    return QUESTIONS.filter(q => q.difficulty === difficulty);
-  }, [difficulty]);
-
-  const currentQuestion = filteredQuestions[currentQuestionIndex];
+  const currentQuestion = quizQuestions[currentQuestionIndex];
 
   const handleLevelSelect = (level: Difficulty) => {
     setDifficulty(level);
+    const pool = QUESTIONS.filter(q => q.difficulty === level);
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, 10);
+    setQuizQuestions(selected);
     setGameState('quiz');
     setCurrentQuestionIndex(0);
     setScore(0);
@@ -78,7 +79,7 @@ export default function App() {
   };
 
   const nextQuestion = () => {
-    if (currentQuestionIndex < filteredQuestions.length - 1) {
+    if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
       setIsAnswered(false);
       setSelectedOption(null);
@@ -167,6 +168,14 @@ export default function App() {
               exit={{ opacity: 0, x: -50 }}
               className="flex-1 flex flex-col space-y-6"
             >
+              {/* Ancient Greek Style Title */}
+              <div className="text-center space-y-1">
+                <h1 className="text-2xl md:text-3xl font-black uppercase tracking-[0.2em] text-[#2c1810]" style={{ fontFamily: "'Cinzel', serif" }}>
+                  Greek Mythology Quest
+                </h1>
+                <div className="h-0.5 w-24 bg-[#d4af37] mx-auto rounded-full"></div>
+              </div>
+
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-y-1">
@@ -182,7 +191,7 @@ export default function App() {
                 <motion.div 
                   className="absolute inset-y-0 left-0 bg-[#d4af37]"
                   initial={{ width: 0 }}
-                  animate={{ width: `${((currentQuestionIndex + 1) / filteredQuestions.length) * 100}%` }}
+                  animate={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}
                 >
                   <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2">
                     <Zap className="w-6 h-6 text-[#d4af37] fill-[#d4af37] animate-pulse" />
@@ -200,7 +209,7 @@ export default function App() {
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute bottom-4 left-4 text-[#2c1810] font-bold text-sm bg-white/80 px-3 py-1 rounded-full border border-black/5">
-                    Quest {currentQuestionIndex + 1} / {filteredQuestions.length}
+                    Quest {currentQuestionIndex + 1} / {quizQuestions.length}
                   </div>
                 </div>
 
@@ -265,7 +274,7 @@ export default function App() {
                       onClick={nextQuestion}
                       className="w-full bg-[#2c1810] text-white py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-[#3d2217] transition-colors shadow-lg"
                     >
-                      <span>{currentQuestionIndex === filteredQuestions.length - 1 ? 'See Results' : 'Next Quest'}</span>
+                      <span>{currentQuestionIndex === quizQuestions.length - 1 ? 'See Results' : 'Next Quest'}</span>
                       <ChevronRight className="w-6 h-6" />
                     </button>
                   </motion.div>
@@ -281,6 +290,14 @@ export default function App() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex-1 flex flex-col items-center justify-center text-center space-y-8"
             >
+              {/* Ancient Greek Style Title */}
+              <div className="text-center space-y-1">
+                <h1 className="text-2xl md:text-3xl font-black uppercase tracking-[0.2em] text-[#2c1810]" style={{ fontFamily: "'Cinzel', serif" }}>
+                  Greek Mythology Quest
+                </h1>
+                <div className="h-0.5 w-24 bg-[#d4af37] mx-auto rounded-full"></div>
+              </div>
+
               <div className="relative">
                 <Trophy className="w-32 h-32 text-[#d4af37] drop-shadow-2xl" />
                 <motion.div
@@ -298,12 +315,12 @@ export default function App() {
               </div>
 
               <div className="bg-white rounded-3xl p-8 border-2 border-black/5 w-full">
-                <div className="text-6xl font-black text-[#d4af37] mb-2">{score}/{filteredQuestions.length}</div>
+                <div className="text-6xl font-black text-[#d4af37] mb-2">{score}/{quizQuestions.length}</div>
                 <div className="text-lg font-bold opacity-60 uppercase tracking-widest">Correct Answers</div>
                 
                 <div className="mt-6 pt-6 border-t border-black/5">
                   <p className="italic text-lg">
-                    {score === filteredQuestions.length 
+                    {score === quizQuestions.length 
                       ? "Unbelievable! You are truly a God of Mythology!" 
                       : score >= 7 
                       ? "Fantastic! The Muses sing of your knowledge!" 
